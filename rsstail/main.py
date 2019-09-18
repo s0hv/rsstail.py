@@ -14,6 +14,7 @@ import optparse
 from datetime import datetime as dt
 
 import feedparser
+import requests
 
 
 from rsstail.formatter import placeholders
@@ -24,7 +25,7 @@ logging.basicConfig(format='! %(message)s', level=logging.INFO)
 log = logging.getLogger(__file__)
 
 
-__version__ = '0.5.1'
+__version__ = '0.6.0'
 
 
 def parseopt(args=None):
@@ -46,7 +47,8 @@ def parseopt(args=None):
         opt('-r', '--reverse', action='store_true', help='show in reverse order'),
         opt('-s', '--striphtml', action='store_true', help='strip html tags'),
         opt('-o', '--nofail', action='store_true', help='do not exit on error'),
-        opt('-q', '--unique', action='store_true', help='skip duplicate items')
+        opt('-q', '--unique', action='store_true', help='skip duplicate items'),
+        opt('-k', '--webhook', action='store', help='Post on every new entry to this webhook')
     ]
 
     fmt_opts = [
@@ -360,10 +362,16 @@ def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
                     continue
 
                 # Grows indefinitely at a rate of 32 bytes per entry.
-                seen_id_hashes[id_hash] = None
+                seen_id_hashes.add(id_hash)
 
             out = formatter(entry)
             stream.write(out)
+
+            if opts.webhook:
+                js = formatter.get_json(entry)
+                js['feedUrl'] = url
+                headers = {'Content-Type': 'Application/json'}
+                requests.post(opts.webhook, json=js, headers=headers)
 
         if hasattr(stream, 'flush'):
             stream.flush()
@@ -419,7 +427,7 @@ def main():
     iteration = 1
 
     # The hashes of all seen post IDs. Maintained only if opts.unique is True.
-    seen_id_hashes = dict() if opts.unique else None
+    seen_id_hashes = set() if opts.unique else None
 
     # handle stdout encoding on Python 2.x
     if sys.version_info.major == 2 and not sys.stdout.isatty():

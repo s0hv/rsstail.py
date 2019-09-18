@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from os import getuid
+# Windows compatibility
+try:
+    from os import getuid
+except ImportError:
+    getuid = None
+
 from setuptools import setup
 from os.path import isdir
 
@@ -25,7 +30,8 @@ entry_points = {
 }
 
 install_requires = [
-    'feedparser >= 5.2.1'
+    'feedparser >= 5.2.1',
+    'requests >= 2.22.0'
 ]
 
 extras_require = {
@@ -48,14 +54,14 @@ extras_require = {
 
 kw = {
     'name':             'rsstail',
-    'version':          '0.5.1',
+    'version':          '0.6.0',
     'description':      'A command-line syndication feed monitor mimicking tail -f',
     'long_description': open('README.rst').read(),
-    'author':           'Georgi Valkov',
-    'author_email':     'georgi.t.valkov@gmail.com',
+    'author':           's0hv',
+    'author_email':     's0hvaperuna@gachimuchi.men',
     'license':          'Revised BSD License',
     'keywords':         'rss tail feed feedparser',
-    'url':              'https://github.com/gvalkov/rsstail.py',
+    'url':              'https://github.com/s0hv/rsstail.py',
     'classifiers':      classifiers,
     'packages':         ['rsstail'],
     'install_requires': install_requires,
@@ -81,7 +87,7 @@ trydirs_zsh = [
 ]
 
 # Try to install bash and zsh completions (emphasis on the *try*).
-if getuid() == 0:
+if getuid and getuid() == 0:
     dirs = [i for i in trydirs_bash if isdir(i)]
     for path in dirs:
         kw['data_files'].append((path, ['etc/rsstail.sh']))

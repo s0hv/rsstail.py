@@ -77,7 +77,7 @@ class Formatter(object):
     def __call__(self, entry):
         return self.format(entry)
 
-    def format(self, entry):
+    def get_rendered(self, entry):
         rendered = {
             'timestamp': self.format_dt(datetime.now()),
             'utc-timestamp': self.format_dt(datetime.utcnow()),
@@ -94,6 +94,22 @@ class Formatter(object):
 
         if self.striphtml:
             rendered['desc'] = self.re_striphtml.sub('', rendered['desc'])
+
+        return rendered
+
+    def get_json(self, entry):
+        rendered = self.get_rendered(entry)
+
+        return {
+            'title': rendered['title'],
+            'url': rendered['link'],
+            'content': rendered['desc'],
+            'publishedAt': rendered['pubdate'] or rendered['updated'],
+            'author': rendered['author'],
+        }
+
+    def format(self, entry):
+        rendered = self.get_rendered(entry)
 
         if self.placeholder_style == self.PH_NEW:
             return self.fmt.format(**rendered)
