@@ -335,10 +335,7 @@ def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
                 msg = 'feed error %r:\n%s'
                 die(msg, opts.nofail, url, feed.bozo_exception)
 
-        if iteration == 1 and isinstance(opts.initial, int):
-            entries = feed.entries[:opts.initial]
-        else:
-            entries = feed.entries
+        entries = feed.entries
 
         if opts.newer:
             log.debug('showing entries older than %s', date_fmt(last_update))
@@ -351,6 +348,9 @@ def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
         new_last_update = get_last_mtime(entries)
         if not new_last_update and not entries:
             new_last_update = last_update
+
+        if iteration == 1 and isinstance(opts.initial, int):
+            entries = entries[:opts.initial]
 
         if opts.reverse:
             entries = reversed(entries)
