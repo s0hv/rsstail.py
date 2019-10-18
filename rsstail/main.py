@@ -21,8 +21,9 @@ from rsstail.formatter import placeholders
 from rsstail.formatter import Formatter, hasformat
 
 
-logging.basicConfig(format='! %(message)s', level=logging.INFO)
 log = logging.getLogger(__file__)
+handler = logging.StreamHandler(sys.stdout)
+log.addHandler(handler)
 
 
 __version__ = '0.6.0'
@@ -347,7 +348,13 @@ def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
 
         new_last_update = get_last_mtime(entries)
         if not new_last_update and not entries:
-            new_last_update = last_update
+            # If we get an empty list of entries on first iteration we'll
+            # get a full list of entries the next time we parse the feed when
+            # the option -n was used
+            if iteration == 1:
+                new_last_update = dt.utcnow().timetuple()
+            else:
+                new_last_update = last_update
 
         if iteration == 1 and isinstance(opts.initial, int):
             entries = entries[:opts.initial]
@@ -381,6 +388,7 @@ def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
         last_mtime = getattr(feed.feed, 'modified_parsed', None)
 
         feeds[url] = (etag, last_mtime, new_last_update)
+        print(last_mtime)
 
 
 def main():
@@ -452,6 +460,8 @@ def main():
             if not opts.nofail:
                 log.exception('')
                 sys.exit(1)
+
+            time.sleep(opts.interval)
 
 
 if __name__ == '__main__':
