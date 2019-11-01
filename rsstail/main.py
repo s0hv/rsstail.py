@@ -388,7 +388,6 @@ def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
         last_mtime = getattr(feed.feed, 'modified_parsed', None)
 
         feeds[url] = (etag, last_mtime, new_last_update)
-        print(last_mtime)
 
 
 def main():
