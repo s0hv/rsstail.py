@@ -322,7 +322,7 @@ def setup_formatter(opts):
 
 def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
     for url, last_element_info in feeds.items():
-        etag, last_mtime, last_update = last_element_info
+        etag, last_mtime, last_update, last_id = last_element_info
 
         log.debug('parsing: %r', url)
         log.debug('etag:  %s', etag)
@@ -342,7 +342,25 @@ def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
             log.debug('showing entries older than %s', date_fmt(last_update))
             entries = [entry for entry in entries if entry.date_parsed > opts.newer]
 
-        if last_update:
+        id_found = False
+        # By default get entries by last unique id because some feeds just don't know how
+        # to properly show time
+        if last_id:
+            log.debug('Showing entries after %s' % last_id)
+            temp_entries = []
+            for entry in entries:
+                if entry.id == last_id:
+                    id_found = True
+                    break
+                temp_entries.append(entry)
+
+            if id_found:
+                entries = temp_entries
+
+        if entries:
+            last_id = entries[0].id
+
+        if not id_found and last_update:
             log.debug('showing entries older than %s', date_fmt(last_update))
             entries = [entry for entry in entries if entry.updated_parsed > last_update]
 
@@ -387,7 +405,7 @@ def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
         etag = getattr(feed, 'etag', None)
         last_mtime = getattr(feed.feed, 'modified_parsed', None)
 
-        feeds[url] = (etag, last_mtime, new_last_update)
+        feeds[url] = (etag, last_mtime, new_last_update, last_id)
 
 
 def main():
@@ -427,8 +445,9 @@ def main():
 
     # { url1 : (None,  # etag
     #           None,  # last modified (time tuple)
-    #           None)} # last update time (time tuple)
-    feeds = dict.fromkeys(args, (None, None, None))
+    #           None,  # last update time (time tuple)
+    #           None)} # Last unique link spotted
+    feeds = dict.fromkeys(args, (None, None, None, None))
 
     # global iteration count
     iteration = 1
