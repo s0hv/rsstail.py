@@ -6,6 +6,12 @@ similar to ``tail -f``. *Rsstail* (Python/feedparser_) is inspired by
 rsstail_ (C/libmrss_), but provides more customizable output
 formatting and additional features.
 
+Notice
+------
+You probably shouldn't use this version but instead use it as a reference
+since I've modified it to fit my specific use case
+
+
 Usage
 -----
 
