@@ -49,7 +49,8 @@ def parseopt(args=None):
         opt('-s', '--striphtml', action='store_true', help='strip html tags'),
         opt('-o', '--nofail', action='store_true', help='do not exit on error'),
         opt('-q', '--unique', action='store_true', help='skip duplicate items'),
-        opt('-k', '--webhook', action='store', help='Post on every new entry to this webhook')
+        opt('-k', '--webhook', action='store', help='Post on every new entry to this webhook'),
+        opt('-S', '--sort', action='store_true', help='Sorts entries by id before filtering. Disables filtering by date')
     ]
 
     fmt_opts = [
@@ -336,7 +337,10 @@ def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
                 msg = 'feed error %r:\n%s'
                 die(msg, opts.nofail, url, feed.bozo_exception)
 
-        entries = feed.entries
+        if opts.sort:
+            entries = sorted(feed.entries, key=lambda e: e.id, reverse=True)
+        else:
+            entries = feed.entries
 
         if opts.newer:
             log.debug('showing entries older than %s', date_fmt(last_update))
