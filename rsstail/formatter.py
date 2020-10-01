@@ -39,7 +39,8 @@ placeholders = {
     'timestamp': None,
     'utc-timestamp': None,
     'source': safe_attrgetter('source', {}),
-    'manga_title': safe_attrgetter('manga_title')
+    'manga_title': safe_attrgetter('manga_title'),
+    'manga_cover': safe_attrgetter('manga_cover')
 }
 
 
@@ -109,7 +110,8 @@ class Formatter(object):
             'publishedAt': rendered['pubdate'] or rendered['updated'],
             'author': rendered['author'],
             'mangaTitle': rendered['manga_title'],
-            'source': rendered['source']
+            'source': rendered['source'],
+            'cover': rendered['manga_cover']
         }
 
     def format(self, entry):
