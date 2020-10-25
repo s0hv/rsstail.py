@@ -338,7 +338,10 @@ def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
                 die(msg, opts.nofail, url, feed.bozo_exception)
 
         if opts.sort:
-            entries = sorted(feed.entries, key=lambda e: e.id, reverse=True)
+            try:
+                entries = sorted(feed.entries, key=lambda e: int(e.id), reverse=True)
+            except ValueError:
+                entries = sorted(feed.entries, key=lambda e: e.id, reverse=True)
         else:
             entries = feed.entries
 
