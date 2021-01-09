@@ -363,6 +363,19 @@ def tick(feeds, opts, formatter, seen_id_hashes, iteration, stream=sys.stdout):
 
             if id_found:
                 entries = temp_entries
+            else:
+                log.debug('Failed to find last id. Trying to get all entries newer than the last id')
+                temp_entries = []
+                try:
+                    last_id_int = int(last_id)
+                    for entry in entries:
+                        if int(entry.id) > last_id_int:
+                            temp_entries.append(entry)
+
+                except ValueError:
+                    pass
+                else:
+                    entries = temp_entries
 
         if entries:
             last_id = entries[0].id
